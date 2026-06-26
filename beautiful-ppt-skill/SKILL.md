@@ -1,187 +1,155 @@
 ---
 name: beautiful-ppt-skill
-description: Create high-end PPT decks with cinematic visual impact, consistent page language, and data-first storytelling. Use when users ask to make slides, optimize PPT design, generate cover pages, unify styles, polish key-data pages, build presentation visuals from source materials, or mention 做PPT、PPT美化、封面设计、汇报排版、重点数据突出.
+description: 按强制步骤产出高质感PPT：先提炼内容，再输出对比驱动的背景图提示词、统一风格元素图提示词、艺术字提示词，并执行图片生成或给出可直接执行的生成清单。用户提到 做PPT、PPT美化、封面设计、汇报排版、重点数据突出、艺术字、背景图 时使用。
+disable-model-invocation: true
 ---
 
 # Beautiful PPT Skill
 
-## Goal
+## 0. 先说结论（执行原则）
 
-Turn user materials into a premium PPT with:
-- high-tension visual style based on contrast,
-- coherent cross-page language,
-- prominent key conclusions and key data,
-- stylized headline typography via generated art text assets.
+这是一个**强制分步**技能，不允许跳步，不允许只给泛泛大纲。
 
-## Required Inputs
+若用户要求做 PPT，必须依次完成：
+1) 内容提炼  
+2) 提示词生成（背景图/元素图/艺术字）  
+3) 图片生成（若工具可用）  
+4) 页级排版方案  
+5) 质检与交付
 
-Collect these first:
-1. deck purpose and audience,
-2. expected page count and presentation length,
-3. source materials (text/docs/images/data),
-4. preferred tone (tech, policy, heritage, business, youthful, etc.),
-5. brand constraints (logo, color, fonts, prohibited elements).
+## 1. 硬性约束（必须遵守）
 
-If inputs are incomplete, proceed with sensible defaults and list assumptions clearly.
+- 必须输出“步骤进度清单”，并在每一步完成后更新状态。
+- 必须给出可直接复制的提示词，不能只写“建议生成图片”。
+- 必须包含“艺术字”设计与提示词（至少 3 个标题词）。
+- 必须明确哪些页突出关键结论、哪些页突出关键数据（大字号/高对比）。
+- 若无法直接生成图，必须明确阻塞原因，并交付完整可执行提示词包。
 
-## Core Design Rules
+禁止行为：
+- 只给 PPT 大纲，不给提示词。
+- 没有背景图方案就进入排版。
+- 不做艺术字方案。
 
-### 1) Contrast-first backgrounds (visual tension engine)
+## 2. 输入解析
 
-Every cover/section opener background prompt must include at least 2-3 contrast dimensions:
-- light vs dark,
-- warm vs cool,
-- large vs small subject,
-- sparse vs dense composition,
-- static vs dynamic motion cues.
+最低输入：
+- 目标（汇报对象、场景）
+- 材料（文档、数据、图片）
+- 页数（默认 10 页）
 
-Use this prompt structure:
+若用户给了 `ppt/pptx` 文件：先抽取其主题、结构、关键数据，再重设计，不得原样照搬。
 
-```text
-[主题主体] + [场景] + [对比维度1/2/3] + [镜头语言] + [质感关键词] + [留白区域]
-```
+## 3. 对比驱动背景图（第一优先级）
 
-Example:
+每张背景图提示词必须至少包含 3 组对比：
+- 明/暗
+- 冷/暖
+- 大/小
+- 少/多
+- 动/静（任选其一补足）
 
-```text
-A colossal launch vehicle lifting off at night, tiny human silhouettes in foreground,
-cold blue atmosphere against warm orange flames, sparse runway versus dense smoke clouds,
-cinematic wide-angle shot, ultra-detailed, volumetric light, high contrast, premium keynote background,
-clean negative space on left for title, no watermark, no text.
-```
-
-### 2) Multi-image style consistency
-
-When generating a set of images, lock these tokens across all prompts:
-- color palette (main/accent/background),
-- lighting setup,
-- texture style,
-- camera language,
-- atmosphere adjectives.
-
-Generate 4-12 assets in one batch request schema:
-- 1 cover background,
-- 2-3 section opener backgrounds,
-- 3-5 content support images,
-- 2-3 decorative element assets (prefer transparent background PNG style).
-
-### 3) Content-first extraction and emphasis
-
-From uploaded materials, extract:
-- one-line core message,
-- 3-5 key conclusions,
-- 3-7 key numbers (with unit/time context),
-- evidence items (cases, benchmarks, milestones, risks).
-
-Slide emphasis rules:
-- one slide, one main message,
-- one key number should dominate a page (big type, color accent, or isolated block),
-- supporting text only explains the number, not competes with it,
-- use hierarchy `headline > key number > support proof`.
-
-### 4) Material-aware style selection
-
-Map source theme to visual style:
-- tech/chips/industry: dark base + metallic accents + glow lines,
-- ocean/travel/team spirit: deep blues + wave diagonals + motion curves,
-- heritage/culture: warm red/brown + texture overlays + ceremonial symmetry,
-- government/reporting: restrained palette + strong grid + clean icons.
-
-If user images exist:
-- preserve image integrity (no over-cropping key subject),
-- apply unified framing ratio and corner/radius rules,
-- use consistent caption and source style.
-
-### 5) Artistic typography workflow
-
-For cover and key-highlight words:
-1. Generate artistic title text image (brush/calligraphic/impact style matching theme).
-2. Prefer transparent background output; if not available, remove background.
-3. Overlay as headline layer; add subtle shadow/glow only when contrast is insufficient.
-4. Keep body text readable; art text is for titles and key tags only.
-
-## Execution Workflow
-
-Copy this checklist and execute in order:
+固定模板：
 
 ```text
-Progress
-- [ ] Step 1: Parse objective and source materials
-- [ ] Step 2: Extract storyline and key numbers
-- [ ] Step 3: Define style board and contrast strategy
-- [ ] Step 4: Generate backgrounds and reusable elements
-- [ ] Step 5: Generate artistic title assets
-- [ ] Step 6: Build slide-by-slide structure
-- [ ] Step 7: Compose layouts and visual hierarchy
-- [ ] Step 8: Final QA and delivery package
+[主体]，[场景]，[对比1]，[对比2]，[对比3]，
+[镜头语言]，[质感词]，[构图留白位置]，
+16:9, cinematic, ultra-detailed, no watermark, no text
 ```
 
-## Slide Blueprint
+## 4. 风格一致元素图（跨页统一）
 
-Use this default deck pattern unless user overrides:
-1. Cover (art title + high-impact background),
-2. Agenda/overview,
-3. Context/problem,
-4. Strategy/framework,
-5. Key data page A,
-6. Key data page B,
-7. Case/proof page,
-8. Roadmap/plan,
-9. Risk + mitigation,
-10. Closing call-to-action.
+必须先定义 Style DNA（并在所有图中复用）：
+- 主色/辅色/背景色
+- 光照方式
+- 纹理质感
+- 镜头语言
+- 情绪关键词
 
-## Prompt Pack
+必须产出：
+- 背景图提示词 >= 3 条
+- 元素图提示词 >= 6 条（同风格，可抠图）
+- 艺术字提示词 >= 3 条
 
-### A) Background generation prompt
+## 5. 内容提炼与重点放大
+
+从材料中必须抽取：
+- 核心主张 1 句
+- 关键结论 3-5 条
+- 关键数据 5-8 条（含单位和时间口径）
+
+并输出“重点放大映射”：
+- 第 X 页：放大数据/结论是什么
+- 放大方式：超大数字 / 高对比色块 / 艺术字标签 / 留白聚焦
+
+## 6. 艺术字流程（封面 + 重点页）
+
+每次都执行：
+1. 为封面标题生成艺术字提示词（主题匹配）
+2. 为 2-3 个重点词生成艺术字提示词
+3. 说明透明底要求（如非透明，需抠图后再上版）
+
+艺术字提示词模板：
 
 ```text
-Create a premium PPT background for [topic].
-Visual style: [style tags].
-Must include contrast: [light-dark], [warm-cool], [large-small].
-Composition: [foreground], [midground], [background], with clear negative space at [left/right/top].
-Mood: [keywords].
-Quality: cinematic, ultra-detailed, high dynamic range, no watermark, no text.
-Aspect ratio: 16:9.
+为“[标题文字]”生成艺术字，风格[书法/刀锋/金属/科技涂鸦]，
+笔画有力量感，识别度高，透明背景，无额外文字，无水印。
 ```
 
-### B) Consistent element batch prompt
+## 7. 固定输出格式（必须按此返回）
 
-```text
-Generate [N] stylistically consistent visual elements for a PPT about [topic].
-Keep identical style DNA: palette [..], lighting [..], texture [..], camera [..].
-Output set includes: icon-like motifs, abstract shapes, symbolic objects.
-Prefer transparent background PNG look, sharp edges, no watermark, no text.
+```markdown
+## Step Progress
+- [x] Step 1 内容提炼
+- [x] Step 2 风格定义
+- [x] Step 3 背景图提示词
+- [x] Step 4 元素图提示词
+- [x] Step 5 艺术字提示词
+- [x] Step 6 页级排版
+- [x] Step 7 质检
+
+## A. 内容提炼
+- 核心主张:
+- 关键结论:
+- 关键数据:
+
+## B. Style DNA
+- 调性:
+- 色板:
+- 光影:
+- 构图:
+
+## C. 背景图提示词（>=3）
+1.
+2.
+3.
+
+## D. 元素图提示词（>=6）
+1.
+2.
+3.
+4.
+5.
+6.
+
+## E. 艺术字提示词（>=3）
+1.
+2.
+3.
+
+## F. 10页排版脚本（逐页）
+- P1:
+- P2:
+- ...
+- P10:
+
+## G. 重点放大映射
+- 页码 -> 重点 -> 放大方式
 ```
 
-### C) Artistic title prompt
+## 8. 质检清单（交付前逐条自查）
 
-```text
-Generate artistic Chinese title text for "[title]".
-Style: [brush / bold calligraphy / carved metal / futuristic graffiti], theme-aligned.
-High readability, strong stroke rhythm, transparent background, no extra words, no watermark.
-```
-
-## Quality Gate (must pass before delivery)
-
-- Visual tension: each hero page has explicit contrast logic.
-- Consistency: repeated style tokens are visible across all pages.
-- Content clarity: key conclusions and key numbers are instantly discoverable.
-- Typography control: art text used for emphasis only, body text remains legible.
-- Layout discipline: alignment, spacing, and density are consistent.
-- Asset hygiene: no watermark, low-res blur, or style drift.
-
-## Output Format
-
-Return:
-1. slide-by-slide outline (title + message + visual notes),
-2. generated prompt set (backgrounds/elements/art text),
-3. key data highlight plan (which number is emphasized on which slide),
-4. optional production checklist for final manual polishing.
-
-## Failure Recovery
-
-If visuals lack quality:
-1. strengthen contrast dimensions in prompt,
-2. reduce competing elements and increase negative space,
-3. lock style tokens more strictly for batch generation,
-4. regenerate art title with clearer stroke and simpler background.
+- 是否有明确“对比逻辑”而不是普通配图
+- 是否给了完整提示词而不是描述性语言
+- 是否有艺术字方案
+- 是否定义并复用了统一 Style DNA
+- 是否把关键数据做了大字号或强对比突出
