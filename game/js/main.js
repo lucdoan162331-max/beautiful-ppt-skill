@@ -1,6 +1,11 @@
 import { Game, LEVELS, getGoalText } from './game.js';
 import { pickEnding } from './levels.js';
-import { SAVE_KEY } from './config.js';
+import { SAVE_KEY, CAFFEINE_SHAKE_MS } from './config.js';
+import { drawCrystalTile } from './tile-art.js';
+import { HealingBackground } from './background.js';
+
+const bgCanvas = document.getElementById('bg-canvas');
+if (bgCanvas) new HealingBackground(bgCanvas).start();
 
 const screens = {
   start: document.getElementById('screen-start'),
@@ -75,11 +80,18 @@ function startGame(index) {
       onLevelStart: updateHUD,
       onStateChange: updateHUD,
       onCaffeineStart: () => {
-        boardWrap.classList.add('shake-strong');
         updateBadges();
       },
+      onCaffeineShake: () => {
+        boardWrap.classList.remove('shake-burst');
+        void boardWrap.offsetWidth;
+        boardWrap.classList.add('shake-burst');
+        clearTimeout(boardWrap._shakeTimer);
+        boardWrap._shakeTimer = setTimeout(() => {
+          boardWrap.classList.remove('shake-burst');
+        }, CAFFEINE_SHAKE_MS);
+      },
       onCaffeineEnd: () => {
-        boardWrap.classList.remove('shake-strong');
         updateBadges();
       },
       onLevelClear: (g) => showLevelClear(g),
@@ -119,13 +131,13 @@ function updateHUD(g) {
       progressText = `已消除 ${g.progress.clearedByType[goal.tile] || 0}/${goal.target}`;
       break;
     case 'trigger_caffeine':
-      progressText = `心悸模式 ${g.progress.caffeineTriggers}/${goal.target}`;
+      progressText = `续命加速 ${g.progress.caffeineTriggers}/${goal.target}`;
       break;
     case 'pot_throw':
-      progressText = `甩锅 ${g.progress.potThrows}/${goal.target}`;
+      progressText = `锅锅弹射 ${g.progress.potThrows}/${goal.target}`;
       break;
     case 'pie_big_match':
-      progressText = `天降大饼 ${g.progress.bigPieMatches}/${goal.target}`;
+      progressText = `大饼泡泡 ${g.progress.bigPieMatches}/${goal.target}`;
       break;
     case 'score_stress':
       progressText = `得分 ${g.score}/${goal.target}`;
@@ -142,13 +154,13 @@ function updateBadges(g = game) {
   if (g.caffeineActive) {
     const b = document.createElement('span');
     b.className = 'badge caffeine';
-    b.textContent = '☕ 心悸模式 ×2';
+    b.textContent = '☕ 续命加速 ×1.8';
     el.appendChild(b);
   }
   if (g.coffeeComboCount > 0) {
     const b = document.createElement('span');
     b.className = 'badge';
-    b.textContent = `冰美式连击 ${g.coffeeComboCount}/3`;
+    b.textContent = `美式连击 ${g.coffeeComboCount}/3`;
     el.appendChild(b);
   }
 }
@@ -161,9 +173,9 @@ function showLevelClear(g) {
   const stats = document.getElementById('clear-stats');
   stats.innerHTML = `
     <div>本关得分：${g.score}</div>
-    <div>怨气值：${g.stress}</div>
-    <div>甩锅次数：${g.progress.potThrows}</div>
-    <div>心悸触发：${g.progress.caffeineTriggers}</div>
+    <div>能量槽：${g.stress}</div>
+    <div>锅锅弹射：${g.progress.potThrows}</div>
+    <div>续命加速：${g.progress.caffeineTriggers}</div>
   `;
 
   const isLast = g.levelIndex >= LEVELS.length - 1;
@@ -186,10 +198,10 @@ function showLevelClear(g) {
 function showLevelFail() {
   const modal = document.getElementById('screen-level-clear');
   document.getElementById('clear-title').textContent = '步数用尽…';
-  document.getElementById('clear-desc').textContent = '怨气没消完，但别灰心，打工人永不言败！';
+  document.getElementById('clear-desc').textContent = '步数用完啦～再来一把，解压不嫌多！';
   document.getElementById('clear-stats').innerHTML = `
     <div>本关得分：${game.score}</div>
-    <div>怨气值：${game.stress}</div>
+    <div>能量槽：${game.stress}</div>
   `;
   const btnNext = document.getElementById('btn-next-level');
   btnNext.textContent = '重新挑战';
@@ -214,10 +226,10 @@ function showEnding(g) {
   document.getElementById('ending-desc').textContent = ending.desc;
   document.getElementById('ending-stats').innerHTML = `
     <div>总得分：${stats.totalScore}</div>
-    <div>最高怨气：${stats.maxStress}</div>
-    <div>甩锅次数：${stats.potThrows}</div>
-    <div>心悸触发：${stats.caffeineTriggers}</div>
-    <div>天降大饼：${stats.bigPieTriggers}</div>
+    <div>最高能量：${stats.maxStress}</div>
+    <div>锅锅弹射：${stats.potThrows}</div>
+    <div>续命加速：${stats.caffeineTriggers}</div>
+    <div>大饼泡泡：${stats.bigPieTriggers}</div>
     <div>通关关卡：${stats.levelsCleared}/${LEVELS.length}</div>
   `;
 }
@@ -270,10 +282,21 @@ document.getElementById('btn-replay').addEventListener('click', () => {
 document.getElementById('btn-share').addEventListener('click', () => {
   const stats = game?.globalStats || {};
   const ending = pickEnding({ ...stats, levelsCleared: (stats.clearedLevels || []).length });
-  const text = `【当代打工人精神状态消消乐】\n我的结局：${ending.title} ${ending.badge}\n总得分 ${stats.totalScore || 0} · 甩锅 ${stats.potThrows || 0} 次 · 心悸 ${stats.caffeineTriggers || 0} 次`;
+  const text = `【精神状态消消乐】\n我的结局：${ending.title} ${ending.badge}\n总得分 ${stats.totalScore || 0} · 锅锅弹射 ${stats.potThrows || 0} 次 · 续命加速 ${stats.caffeineTriggers || 0} 次`;
   navigator.clipboard?.writeText(text).then(() => {
     alert('战绩已复制到剪贴板！');
   }).catch(() => {
     alert(text);
   });
+});
+
+// 启动页水晶预览
+document.querySelectorAll('.preview-gem').forEach((canvas) => {
+  const tile = parseInt(canvas.dataset.tile, 10);
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 64 * dpr;
+  canvas.height = 64 * dpr;
+  ctx.scale(dpr, dpr);
+  drawCrystalTile(ctx, tile, 32, 32, 56, false);
 });
