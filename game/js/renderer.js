@@ -1,4 +1,4 @@
-import { TILE_META, TILE } from './config.js';
+import { drawCrystalTile } from './tile-art.js';
 
 export class Renderer {
   constructor(canvas) {
@@ -43,38 +43,67 @@ export class Renderer {
     const { ctx, cellSize, gridSize, boardSize } = this;
     ctx.clearRect(0, 0, boardSize, boardSize);
 
-    // 背景
-    ctx.fillStyle = '#0f0f1a';
+    // 棋盘 — 磨砂玻璃台面
+    const bgGrad = ctx.createLinearGradient(0, 0, boardSize, boardSize);
+    bgGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+    bgGrad.addColorStop(0.5, 'rgba(255,248,252,0.45)');
+    bgGrad.addColorStop(1, 'rgba(232,244,255,0.5)');
+    ctx.fillStyle = bgGrad;
     if (ctx.roundRect) {
       ctx.beginPath();
-      ctx.roundRect(0, 0, boardSize, boardSize, 12);
+      ctx.roundRect(0, 0, boardSize, boardSize, 14);
       ctx.fill();
     } else {
       ctx.fillRect(0, 0, boardSize, boardSize);
     }
 
-    // 格子
+    // 内边框光晕
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 2;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(1, 1, boardSize - 2, boardSize - 2, 13);
+      ctx.stroke();
+    }
+
+    // 格子槽
     for (let r = 0; r < gridSize; r++) {
       for (let c = 0; c < gridSize; c++) {
         const x = c * cellSize;
         const y = r * cellSize;
         const isHL = this.highlightCells.has(`${r},${c}`);
         const isSel = this.selected && this.selected.r === r && this.selected.c === c;
+        const pad = cellSize * 0.06;
 
-        ctx.fillStyle = isHL
-          ? 'rgba(233, 69, 96, 0.3)'
-          : (r + c) % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
-        ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+        // 凹槽
+        const slotGrad = ctx.createRadialGradient(
+          x + cellSize / 2, y + cellSize / 2, 0,
+          x + cellSize / 2, y + cellSize / 2, cellSize * 0.5
+        );
+        if (isHL) {
+          slotGrad.addColorStop(0, 'rgba(233,69,96,0.25)');
+          slotGrad.addColorStop(1, 'rgba(233,69,96,0.08)');
+        } else {
+          slotGrad.addColorStop(0, 'rgba(255,255,255,0.04)');
+          slotGrad.addColorStop(1, 'rgba(0,0,0,0.2)');
+        }
+        roundRect(ctx, x + pad, y + pad, cellSize - pad * 2, cellSize - pad * 2, cellSize * 0.15);
+        ctx.fillStyle = slotGrad;
+        ctx.fill();
 
         if (isSel) {
-          ctx.strokeStyle = '#e94560';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+          ctx.strokeStyle = '#ff6b8a';
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = '#e94560';
+          ctx.shadowBlur = 12;
+          roundRect(ctx, x + pad, y + pad, cellSize - pad * 2, cellSize - pad * 2, cellSize * 0.15);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
         }
       }
     }
 
-    // 方块
+    // 水晶方块
     for (let r = 0; r < gridSize; r++) {
       for (let c = 0; c < gridSize; c++) {
         const tile = board.get(r, c);
@@ -86,7 +115,7 @@ export class Renderer {
         const scale = anim.scale;
         const stunned = board.isStunned(r, c, now);
 
-        this.drawTile(ctx, tile, x, y, cellSize * 0.85 * scale, stunned);
+        drawCrystalTile(ctx, tile, x, y, cellSize * 0.82 * scale, stunned);
       }
     }
 
@@ -95,13 +124,18 @@ export class Renderer {
       p.life -= 0.02;
       if (p.life <= 0) return false;
       ctx.globalAlpha = p.life;
-      ctx.font = `${p.size}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(p.emoji, p.x, p.y);
+      if (p.tileType !== undefined) {
+        drawCrystalTile(ctx, p.tileType, p.x, p.y, p.size, false);
+      } else {
+        ctx.font = `bold ${p.size}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#FFE082';
+        ctx.fillText(p.emoji, p.x, p.y);
+      }
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.3;
+      p.vy += 0.25;
       ctx.globalAlpha = 1;
       return true;
     });
@@ -116,44 +150,25 @@ export class Renderer {
     return { dx: 0, dy: 0, scale: 1 };
   }
 
-  drawTile(ctx, tile, x, y, size, stunned) {
-    const meta = TILE_META[tile];
-    if (!meta) return;
-
-    const radius = size / 2;
-
-    // 背景圆
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = meta.color;
-    ctx.fill();
-
-    if (meta.glow) {
-      ctx.shadowColor = '#ffd700';
-      ctx.shadowBlur = 12;
+  addParticle(x, y, tileOrEmoji) {
+    if (typeof tileOrEmoji === 'number') {
+      this.particles.push({
+        x, y,
+        tileType: tileOrEmoji,
+        vx: (Math.random() - 0.5) * 5,
+        vy: -Math.random() * 5 - 2,
+        life: 1,
+        size: 18 + Math.random() * 8,
+      });
+    } else {
+      this.particles.push({
+        x, y, emoji: tileOrEmoji,
+        vx: (Math.random() - 0.5) * 4,
+        vy: -Math.random() * 4 - 2,
+        life: 1,
+        size: 16 + Math.random() * 8,
+      });
     }
-
-    // emoji
-    ctx.font = `${size * 0.7}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(meta.emoji, x, y + 2);
-    ctx.shadowBlur = 0;
-
-    if (stunned) {
-      ctx.font = `${size * 0.35}px serif`;
-      ctx.fillText('💫', x + radius * 0.5, y - radius * 0.5);
-    }
-  }
-
-  addParticle(x, y, emoji) {
-    this.particles.push({
-      x, y, emoji,
-      vx: (Math.random() - 0.5) * 4,
-      vy: -Math.random() * 4 - 2,
-      life: 1,
-      size: 20 + Math.random() * 10,
-    });
   }
 
   screenToCell(clientX, clientY) {
@@ -179,4 +194,19 @@ export class Renderer {
   clearHighlight() {
     this.highlightCells.clear();
   }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+  ctx.lineTo(x + w, y + h - rr);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  ctx.lineTo(x + rr, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+  ctx.lineTo(x, y + rr);
+  ctx.quadraticCurveTo(x, y, x + rr, y);
+  ctx.closePath();
 }
