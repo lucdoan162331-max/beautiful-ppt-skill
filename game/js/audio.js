@@ -1,6 +1,7 @@
 import { SFX_LINES } from './config.js';
 
 let audioCtx = null;
+let recentSfx = [];
 
 function getCtx() {
   if (!audioCtx) {
@@ -25,52 +26,60 @@ export function playTone(freq, duration = 0.1, type = 'sine', volume = 0.15) {
   } catch (_) { /* silent */ }
 }
 
-export function playMatch() {
-  playTone(523, 0.08);
-  setTimeout(() => playTone(659, 0.08), 60);
-  setTimeout(() => playTone(784, 0.12), 120);
+export function playMatch(combo = 1) {
+  const base = 520 + Math.min(combo, 5) * 40;
+  playTone(base, 0.07);
+  setTimeout(() => playTone(base + 130, 0.07), 50);
+  setTimeout(() => playTone(base + 260, 0.1), 100);
 }
 
 export function playSwap() {
-  playTone(400, 0.05, 'triangle', 0.1);
+  playTone(440, 0.04, 'triangle', 0.08);
 }
 
 export function playInvalid() {
-  playTone(200, 0.15, 'sawtooth', 0.1);
+  playTone(220, 0.1, 'sawtooth', 0.08);
 }
 
 export function playPotThrow() {
-  playTone(150, 0.1, 'square', 0.2);
-  setTimeout(() => playTone(100, 0.2, 'square', 0.15), 80);
+  playTone(180, 0.08, 'square', 0.15);
+  setTimeout(() => playTone(120, 0.12, 'sine', 0.12), 60);
 }
 
 export function playCaffeine() {
-  for (let i = 0; i < 5; i++) {
-    setTimeout(() => playTone(300 + i * 80, 0.06, 'sawtooth', 0.12), i * 50);
-  }
+  [400, 520, 640, 760].forEach((f, i) => {
+    setTimeout(() => playTone(f, 0.05, 'sine', 0.1), i * 40);
+  });
 }
 
 export function playMeetingTap() {
-  playTone(600 + Math.random() * 200, 0.04, 'square', 0.08);
+  playTone(500 + Math.random() * 300, 0.03, 'square', 0.07);
 }
 
 export function playWin() {
   [523, 659, 784, 1047].forEach((f, i) => {
-    setTimeout(() => playTone(f, 0.2, 'sine', 0.12), i * 120);
+    setTimeout(() => playTone(f, 0.18, 'sine', 0.11), i * 100);
   });
 }
 
+/** 不重复最近 5 条的随机文案 */
 export function randomSfxLine() {
-  return SFX_LINES[Math.floor(Math.random() * SFX_LINES.length)];
+  const pool = SFX_LINES.filter((l) => !recentSfx.includes(l));
+  const pick = pool.length > 0
+    ? pool[Math.floor(Math.random() * pool.length)]
+    : SFX_LINES[Math.floor(Math.random() * SFX_LINES.length)];
+  recentSfx.push(pick);
+  if (recentSfx.length > 5) recentSfx.shift();
+  return pick;
 }
 
 export function showSfxToast(text) {
   const el = document.getElementById('sfx-toast');
   if (!el) return;
-  el.textContent = `"${text}"`;
+  el.textContent = text;
   el.classList.add('show');
   clearTimeout(el._timer);
-  el._timer = setTimeout(() => el.classList.remove('show'), 1800);
+  el._timer = setTimeout(() => el.classList.remove('show'), 1600);
 }
 
 export function resumeAudio() {
