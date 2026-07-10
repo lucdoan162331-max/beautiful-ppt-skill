@@ -4,55 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#1a1a2e">
-  <title>当代打工人精神状态消消乐</title>
+  <meta name="theme-color" content="#E8F4FF">
+  <title>精神状态消消乐</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
   <div id="app">
-    <!-- 启动页 -->
     <div id="screen-start" class="screen active">
-      <div class="start-bg"></div>
       <div class="start-content">
-        <h1 class="game-title">当代打工人<br>精神状态消消乐</h1>
-        <p class="game-subtitle">把职场怨气变成游戏动力，消除压力</p>
+        <h1 class="game-title">精神状态<br>消消乐</h1>
+        <p class="game-subtitle">连消解压，指尖冒泡泡～</p>
         <div class="tile-preview">
-          <span class="preview-tile" data-type="coffee">☕</span>
-          <span class="preview-tile" data-type="pie">🥞</span>
-          <span class="preview-tile" data-type="pot">🍳</span>
-          <span class="preview-tile" data-type="ppt">📉</span>
-          <span class="preview-tile" data-type="read">✓✓</span>
+          <canvas class="preview-gem" data-tile="0" width="64" height="64"></canvas>
+          <canvas class="preview-gem" data-tile="1" width="64" height="64"></canvas>
+          <canvas class="preview-gem" data-tile="2" width="64" height="64"></canvas>
+          <canvas class="preview-gem" data-tile="3" width="64" height="64"></canvas>
+          <canvas class="preview-gem" data-tile="4" width="64" height="64"></canvas>
         </div>
-        <button id="btn-start" class="btn-primary">开始打工</button>
-        <button id="btn-how" class="btn-secondary">离谱机制说明</button>
+        <button id="btn-start" class="btn-primary">开始解压</button>
+        <button id="btn-how" class="btn-secondary">彩蛋机制说明</button>
       </div>
     </div>
 
-    <!-- 机制说明 -->
     <div id="screen-rules" class="screen overlay">
       <div class="modal">
-        <h2>离谱机制一览</h2>
+        <h2>彩蛋机制一览</h2>
         <ul class="rules-list">
-          <li><strong>☕ 心悸模式</strong>：连消 3 组冰美式，咖啡因过量！屏幕抖动，消除加速 200%</li>
-          <li><strong>🍳 甩锅大法</strong>：把飞来横锅移到边缘，它会砸向隔壁格子，晕眩目标</li>
-          <li><strong>🥞 天降大饼</strong>：一次凑齐 5 个大饼，老板虚影降临，狂点打破无休止会议</li>
-          <li><strong>通关方式</strong>：7 个关卡各有目标，最终结局由你的打法决定——没有唯一正确答案</li>
+          <li><strong>☕ 续命加速</strong>：连消 3 组美式，屏幕轻轻抖一下，消除加速 180%</li>
+          <li><strong>🍳 锅锅弹射</strong>：把锅锅移到边缘，它会弹出去轻轻撞一下隔壁</li>
+          <li><strong>🥞 大饼泡泡</strong>：一次凑齐 5 个大饼，金色泡泡雨！狂点戳破超解压</li>
+          <li><strong>通关方式</strong>：7 个关卡各有小目标，结局由你的玩法决定</li>
         </ul>
-        <button id="btn-rules-close" class="btn-primary">懂了，开干</button>
+        <button id="btn-rules-close" class="btn-primary">懂了，开玩！</button>
       </div>
     </div>
 
-    <!-- 关卡选择 -->
     <div id="screen-levels" class="screen">
       <header class="level-header">
         <h2>选择关卡</h2>
-        <p class="level-hint">通关路线开放 · 结局由你书写</p>
+        <p class="level-hint">每关玩法不同 · 结局开放多元</p>
       </header>
       <div id="level-list" class="level-list"></div>
       <div id="stats-bar" class="stats-bar"></div>
     </div>
 
-    <!-- 游戏主界面 -->
     <div id="screen-game" class="screen">
       <header class="game-header">
         <button id="btn-pause" class="btn-icon" aria-label="暂停">⏸</button>
@@ -74,7 +70,7 @@
 
       <div class="progress-bar-wrap">
         <div class="progress-label">
-          <span>怨气值</span>
+          <span>能量槽</span>
           <span id="stress-value">0</span>
         </div>
         <div class="progress-track">
@@ -85,22 +81,20 @@
       <div id="moves-left" class="moves-left"></div>
     </div>
 
-    <!-- 天降大饼 QTE -->
     <div id="screen-meeting" class="screen overlay hidden">
       <div class="meeting-bg"></div>
-      <div class="boss-shadow">👔</div>
+      <div class="boss-shadow">🥞✨</div>
       <div class="meeting-content">
-        <h2>无休止的会议</h2>
-        <p class="meeting-text" id="meeting-text">这个需求的底层逻辑是……</p>
+        <h2>大饼泡泡雨</h2>
+        <p class="meeting-text" id="meeting-text">泡泡要飞起来啦！</p>
         <div class="tap-meter">
           <div id="tap-progress" class="tap-progress"></div>
         </div>
-        <p class="tap-hint">狂点屏幕打破会议！</p>
-        <div id="tap-count" class="tap-count">0 / 30</div>
+        <p class="tap-hint">狂点屏幕戳泡泡！</p>
+        <div id="tap-count" class="tap-count">0 / 28</div>
       </div>
     </div>
 
-    <!-- 关卡完成 -->
     <div id="screen-level-clear" class="screen overlay hidden">
       <div class="modal result-modal">
         <h2 id="clear-title">关卡完成！</h2>
@@ -111,7 +105,6 @@
       </div>
     </div>
 
-    <!-- 最终结局 -->
     <div id="screen-ending" class="screen overlay hidden">
       <div class="modal ending-modal">
         <div id="ending-badge" class="ending-badge"></div>
@@ -123,16 +116,14 @@
       </div>
     </div>
 
-    <!-- 暂停 -->
     <div id="screen-pause" class="screen overlay hidden">
       <div class="modal">
-        <h2>摸鱼暂停</h2>
-        <button id="btn-resume" class="btn-primary">继续打工</button>
-        <button id="btn-quit" class="btn-secondary">放弃本关</button>
+        <h2>小憩一下</h2>
+        <button id="btn-resume" class="btn-primary">继续玩</button>
+        <button id="btn-quit" class="btn-secondary">返回选关</button>
       </div>
     </div>
 
-    <!-- 音效提示 toast -->
     <div id="sfx-toast" class="sfx-toast"></div>
   </div>
 
