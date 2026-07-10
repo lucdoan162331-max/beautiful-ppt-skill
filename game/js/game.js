@@ -2,7 +2,7 @@ import { Board } from './board.js';
 import { Renderer } from './renderer.js';
 import { LEVELS, checkLevelGoal, getGoalText } from './levels.js';
 import {
-  TILE, CAFFEINE_TRIGGER, CAFFEINE_DURATION,
+  TILE, CAFFEINE_TRIGGER, CAFFEINE_DURATION, CAFFEINE_SHAKE_MS,
   POT_STUN_DURATION, MEETING_TAP_TARGET, MEETING_TAP_TIMEOUT,
   ANIM_SPEED_NORMAL, ANIM_SPEED_CAFFEINE, SAVE_KEY,
 } from './config.js';
@@ -249,7 +249,7 @@ export class Game {
   async handlePotThrow(potR, potC, otherR, otherC) {
     this.busy = true;
     playPotThrow();
-    showSfxToast('锅来！');
+    showSfxToast('锅锅弹射！');
 
     const throwResult = this.board.throwPot(potR, potC);
     if (throwResult) {
@@ -265,11 +265,12 @@ export class Game {
         this.renderer.addParticle(
           fromPos.x + (toPos.x - fromPos.x) * i / 5,
           fromPos.y + (toPos.y - fromPos.y) * i / 5,
-          '🍳'
+          TILE.POT
         );
       }
 
-      showSfxToast(`砸晕了${targetTile >= 0 ? ['冰美式','大饼','锅','PPT','已读不回'][targetTile] : '方块'}！`);
+      const names = ['续命美式', '黄金大饼', '飞天锅锅', '灵感曲线', '已读不回'];
+      showSfxToast(`撞到了${names[targetTile] || '小可爱'}，晕乎乎～`);
       await this.delay(400 / this.getAnimSpeed());
     }
 
@@ -308,15 +309,14 @@ export class Game {
 
         for (const cell of m.cells) {
           const pos = this.renderer.cellCenter(cell.r, cell.c);
-          const emoji = ['☕','🥞','🍳','📉','✓✓'][m.type];
-          this.renderer.addParticle(pos.x, pos.y, emoji);
+          this.renderer.addParticle(pos.x, pos.y, m.type);
         }
       }
 
       // 去重
       const unique = [...new Map(allCells.map(c => [`${c.r},${c.c}`, c])).values()];
       this.renderer.setHighlight(unique);
-      playMatch();
+      playMatch(chainCount);
       showSfxToast(randomSfxLine());
 
       // 冰美式连击 → 心悸模式
@@ -346,7 +346,7 @@ export class Game {
 
     if (!this.board.hasValidMoves()) {
       this.board.shuffle();
-      showSfxToast('局面重塑，继续卷！');
+      showSfxToast('局面太挤啦，自动换个排列～');
     }
 
     this.busy = false;
@@ -361,8 +361,10 @@ export class Game {
     this.progress.caffeineTriggers++;
     this.globalStats.caffeineTriggers++;
     playCaffeine();
-    showSfxToast('咖啡因过量！心悸模式！');
+    showSfxToast('续命加速！抖一下更带感～');
     this.callbacks.onCaffeineStart?.();
+    // 短暂抖一抖，不持续摇晃
+    this.callbacks.onCaffeineShake?.();
   }
 
   async triggerMeeting() {
@@ -386,7 +388,7 @@ export class Game {
 
       const timeout = setTimeout(() => {
         cleanup();
-        showSfxToast('会议太长，强制散会！');
+        showSfxToast('泡泡戳完啦，超解压！');
         resolve();
       }, MEETING_TAP_TIMEOUT);
 
@@ -399,7 +401,7 @@ export class Game {
         if (this.meetingTaps >= MEETING_TAP_TARGET) {
           cleanup();
           playWin();
-          showSfxToast('成功打破会议！');
+          showSfxToast('金色泡泡全部戳破！爽！');
           resolve();
         }
       };
