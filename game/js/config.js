@@ -1,58 +1,51 @@
 /** 方块类型定义 */
 export const TILE = {
-  COFFEE: 0,  // 冰美式
-  PIE: 1,     // 画的大饼
-  POT: 2,     // 飞来横锅
-  PPT: 3,     // PPT折线图
-  READ: 4,    // 已读不回
+  COFFEE: 0,
+  PIE: 1,
+  POT: 2,
+  PPT: 3,
+  READ: 4,
   EMPTY: -1,
-  STUNNED: -2, // 被锅砸晕
+  STUNNED: -2,
 };
 
 export const TILE_META = {
-  [TILE.COFFEE]: { emoji: '☕', name: '冰美式', color: '#6f4e37' },
-  [TILE.PIE]:    { emoji: '🥞', name: '画的大饼', color: '#f5c842', glow: true },
-  [TILE.POT]:    { emoji: '🍳', name: '飞来横锅', color: '#2d2d2d' },
-  [TILE.PPT]:    { emoji: '📉', name: 'PPT折线图', color: '#e74c3c' },
-  [TILE.READ]:   { emoji: '✓✓', name: '已读不回', color: '#4ecca3' },
+  [TILE.COFFEE]: { name: '续命美式' },
+  [TILE.PIE]:    { name: '黄金大饼' },
+  [TILE.POT]:    { name: '飞天锅锅' },
+  [TILE.PPT]:    { name: '灵感曲线' },
+  [TILE.READ]:   { name: '已读不回' },
 };
 
 export const GRID_SIZE = 8;
 export const MATCH_MIN = 3;
 export const ANIM_SPEED_NORMAL = 1;
-export const ANIM_SPEED_CAFFEINE = 2; // 200% 加速
+export const ANIM_SPEED_CAFFEINE = 1.8;
 
-/** 消除音效文案 */
+/** 消除爽感文案 — 多元化池 */
 export const SFX_LINES = [
-  '收到！',
-  '来对齐一下',
-  '这个需求的底层逻辑是……',
-  '咱先拉个会',
-  '辛苦再改一版',
-  '好的好的',
-  '我这边没问题',
-  '尽快给到',
+  '啪！爽到！', '连击美美哒～', '解压 +10086', '丝滑！', '太治愈了叭',
+  'combo 起飞！', '脑袋空空好舒服', '叮！烦恼-1', '这波血赚', '消除快乐！',
+  '咔嚓咔嚓～', '爽感拉满！', '小确幸 +1', '耶！又消掉一堆', '解压模式 ON',
+  '舒服了～', '快乐来得太快', '像戳泡泡一样爽', '烦恼蒸发中…', '今日份开心到账',
+  '哇哦三连！', '手感火热！', '解压小能手就是你', '噗嗤——没了！', '治愈力 MAX',
+  '闪闪发亮！', '好运连连～', '能量充满！', '轻松一刻', '烦恼拜拜～',
 ];
 
+/** 大饼泡泡 QTE 文案 */
 export const MEETING_LINES = [
-  '这个需求的底层逻辑是……',
-  '咱先拉个会对齐一下',
-  '这个事情要形成闭环',
-  '颗粒度还要再细一点',
-  '能不能再卷一点',
-  '老板说要降本增效',
+  '泡泡要飞起来啦！', '戳戳戳，全戳破！', '金色泡泡来袭～',
+  '快乐大爆炸预备！', '一口气戳完超解压！', '泡泡里藏着小惊喜',
+  '叮叮当当～', '满屏金光闪闪！', '戳破就舒服了！', '泡泡雨来啦～',
 ];
 
-/** 天降大饼 QTE */
-export const MEETING_TAP_TARGET = 30;
-export const MEETING_TAP_TIMEOUT = 8000; // ms
+export const MEETING_TAP_TARGET = 28;
+export const MEETING_TAP_TIMEOUT = 7000;
 
-/** 心悸模式 */
-export const CAFFEINE_TRIGGER = 3; // 连消 3 组冰美式
-export const CAFFEINE_DURATION = 8000; // ms
+export const CAFFEINE_TRIGGER = 3;
+export const CAFFEINE_DURATION = 6000;
+export const CAFFEINE_SHAKE_MS = 480;
 
-/** 甩锅 */
-export const POT_STUN_DURATION = 3000; // ms
+export const POT_STUN_DURATION = 2500;
 
-/** 本地存储 key */
 export const SAVE_KEY = 'worker-match3-save';
